@@ -171,8 +171,8 @@ ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintDa
 {
 
     if (!m_shader->isValid()
-            || w->windowRole().contains("plasma", Qt::CaseInsensitive)
             || w->windowClass().contains("plasma", Qt::CaseInsensitive)
+            || w->windowClass().contains("krunner", Qt::CaseInsensitive)
             || !w->isPaintingEnabled()
 //            || !w->hasDecoration()
             || KWin::effects->activeFullScreenEffect()
@@ -215,8 +215,8 @@ void
 ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
 {
     if (!m_shader->isValid()
-            || w->windowRole().contains("plasma", Qt::CaseInsensitive)
             || w->windowClass().contains("plasma", Qt::CaseInsensitive)
+            || w->windowClass().contains("krunner", Qt::CaseInsensitive)
             || !w->isPaintingEnabled()
 //            || !w->hasDecoration()
             || KWin::effects->activeFullScreenEffect()
