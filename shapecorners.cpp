@@ -276,14 +276,12 @@ ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region,
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     const int mvpMatrixLocation = m_shader->uniformLocation("modelViewProjectionMatrix");
     KWin::ShaderManager *sm = KWin::ShaderManager::instance();
-    sm->pushShader(m_shader/*KWin::ShaderTrait::MapTexture*/);
-
+    sm->pushShader(m_shader);
     for (int i = 0; i < NTex; ++i)
     {
-        QMatrix4x4 modelViewProjection;
-        modelViewProjection.ortho(0, s.width(), s.height(), 0, 0, 65535);
-        modelViewProjection.translate(rect[i].x(), rect[i].y());
-        m_shader->setUniform(mvpMatrixLocation, modelViewProjection);
+        QMatrix4x4 mvp = data.screenProjectionMatrix();
+        mvp.translate(rect[i].x(), rect[i].y());
+        m_shader->setUniform(mvpMatrixLocation, mvp);
         glActiveTexture(GL_TEXTURE1);
         m_tex[3-i]->bind();
         glActiveTexture(GL_TEXTURE0);
