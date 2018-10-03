@@ -25,6 +25,7 @@
 #include <QStandardPaths>
 #include <kwinglplatform.h>
 #include <kwinglutils.h>
+#include <kwindowsystem.h>
 #include <QMatrix4x4>
 
 KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(  ShapeCornersFactory,
@@ -70,6 +71,11 @@ ShapeCornersEffect::ShapeCornersEffect() : KWin::Effect(), m_shader(0)
             m_shader->setUniform(corner, 1);
             m_shader->setUniform(sampler, 0);
             KWin::ShaderManager::instance()->popShader();
+            for (int i = 0; i < KWindowSystem::windows().count(); ++i)
+                if (KWin::EffectWindow *win = KWin::effects->findWindow(KWindowSystem::windows().at(i)))
+                    windowAdded(win);
+            connect(KWin::effects, &KWin::EffectsHandler::windowAdded, this, &ShapeCornersEffect::windowAdded);
+            connect(KWin::effects, &KWin::EffectsHandler::windowClosed, this, [this](){m_managed.removeOne(static_cast<KWin::EffectWindow *>(sender()));});
         }
     }
     else
@@ -87,6 +93,18 @@ ShapeCornersEffect::~ShapeCornersEffect()
         if (m_rect[i])
             delete m_rect[i];
     }
+}
+
+void
+ShapeCornersEffect::windowAdded(KWin::EffectWindow *w)
+{
+    if (m_managed.contains(w))
+        return;
+    if (w->windowClass().contains("plasma", Qt::CaseInsensitive)
+            || w->windowClass().contains("krunner", Qt::CaseInsensitive)
+            || w->windowClass().contains("latte-dock", Qt::CaseInsensitive))
+        return;
+    m_managed << w;
 }
 
 void
@@ -169,16 +187,11 @@ ShapeCornersEffect::reconfigure(ReconfigureFlags flags)
 void
 ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintData &data, int time)
 {
-
     if (!m_shader->isValid()
-            || w->windowClass().contains("plasma", Qt::CaseInsensitive)
-            || w->windowClass().contains("krunner", Qt::CaseInsensitive)
-            || w->windowClass().contains("latte-dock", Qt::CaseInsensitive)
+            || !m_managed.contains(w)
             || !w->isPaintingEnabled()
-//            || !w->hasDecoration()
             || KWin::effects->activeFullScreenEffect()
             || w->isDesktop()
-//            || w->isModal()
             || data.quads.isTransformed())
     {
         KWin::effects->prePaintWindow(w, data, time);
@@ -216,14 +229,10 @@ void
 ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
 {
     if (!m_shader->isValid()
-            || w->windowClass().contains("plasma", Qt::CaseInsensitive)
-            || w->windowClass().contains("krunner", Qt::CaseInsensitive)
-            || w->windowClass().contains("latte-dock", Qt::CaseInsensitive)            
+            || !m_managed.contains(w)
             || !w->isPaintingEnabled()
-//            || !w->hasDecoration()
             || KWin::effects->activeFullScreenEffect()
             || w->isDesktop()
-//            || w->isModal()
             || data.quads.isTransformed()
             || (mask & PAINT_WINDOW_TRANSFORMED)
             || !hasShadow(data.quads))
