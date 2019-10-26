@@ -17,6 +17,7 @@
  *   Boston, MA 02110-1301, USA.
  */
 
+#include "dbus.h"
 #include "shapecorners.h"
 #include <QPainter>
 #include <QImage>
@@ -27,6 +28,8 @@
 #include <kwinglutils.h>
 #include <kwindowsystem.h>
 #include <QMatrix4x4>
+#include <KConfigGroup>
+#include <QtDBus/QDBusConnection>
 
 KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(  ShapeCornersFactory,
                                         ShapeCornersEffect,
@@ -37,6 +40,8 @@ KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(  ShapeCornersFactory,
 
 ShapeCornersEffect::ShapeCornersEffect() : KWin::Effect(), m_shader(0)
 {
+    new KWin::EffectAdaptor(this);
+    QDBusConnection::sessionBus().registerObject("/ShapeCorners", this);
     for (int i = 0; i < NTex; ++i)
     {
         m_tex[i] = 0;
@@ -181,7 +186,8 @@ ShapeCornersEffect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags)
     m_alpha = 63;
-    setRoundness(5);
+    KConfigGroup conf = KSharedConfig::openConfig("shapecorners.conf")->group("General");
+    setRoundness(conf.readEntry("roundness", 5));
 }
 
 void
