@@ -20,12 +20,11 @@ K_PLUGIN_FACTORY_WITH_JSON(ShapeCornersConfigFactory,
                            registerPlugin<ShapeCornersConfig>();)
 
 
-class ConfigDialog : public QDialog , public Ui::Dialog
+class ConfigDialog : public QWidget , public Ui::Form
 {
 public:
-    explicit ConfigDialog(QWidget *parent) : QDialog(parent)
+    explicit ConfigDialog(QWidget *parent) : QWidget(parent)
 {
-    setWindowFlags(0);
     setupUi(this);
 }
 };
@@ -36,12 +35,12 @@ public:
     Private(ShapeCornersConfig *config)
         : q(config)
         , roundness("roundness")
-        , shadows("shadows")
+        , dsp("dsp")
         , defaultRoundness(5)
         , defaultShadows(false)
     {}
     ShapeCornersConfig *q;
-    QString roundness, shadows;
+    QString roundness, dsp;
     QVariant defaultRoundness, defaultShadows;
     ConfigDialog *ui;
 };
@@ -51,10 +50,8 @@ ShapeCornersConfig::ShapeCornersConfig(QWidget* parent, const QVariantList& args
     , d(new Private(this))
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
-
     layout->addWidget(d->ui = new ConfigDialog(this));
     setLayout(layout);
-    setMinimumHeight(300);
 }
 
 void
@@ -63,7 +60,7 @@ ShapeCornersConfig::load()
     KCModule::load();
     KConfigGroup conf = KSharedConfig::openConfig("shapecorners.conf")->group("General");
     d->ui->roundness->setValue(conf.readEntry(d->roundness, d->defaultRoundness).toInt());
-    d->ui->shadows->setChecked(conf.readEntry(d->shadows, d->defaultShadows).toBool());
+    d->ui->dsp->setChecked(conf.readEntry(d->dsp, d->defaultShadows).toBool());
     emit changed(false);
 }
 
@@ -73,7 +70,7 @@ ShapeCornersConfig::save()
     KCModule::save();
     KConfigGroup conf = KSharedConfig::openConfig("shapecorners.conf")->group("General");
     conf.writeEntry(d->roundness, d->ui->roundness->value());
-    conf.writeEntry(d->shadows, d->ui->shadows->isChecked());
+    conf.writeEntry(d->dsp, d->ui->dsp->isChecked());
     conf.sync();
     emit changed(false);
     OrgKdeKwinEffectsInterface interface(QStringLiteral("org.kde.KWin"),
@@ -87,7 +84,7 @@ ShapeCornersConfig::defaults()
 {
     KCModule::defaults();
     d->ui->roundness->setValue(d->defaultRoundness.toInt());
-    d->ui->shadows->setChecked(d->defaultShadows.toBool());
+    d->ui->dsp->setChecked(d->defaultShadows.toBool());
     emit changed(true);
 }
 
