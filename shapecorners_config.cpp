@@ -54,6 +54,11 @@ ShapeCornersConfig::ShapeCornersConfig(QWidget* parent, const QVariantList& args
     setLayout(layout);
 }
 
+ShapeCornersConfig::~ShapeCornersConfig()
+{
+    delete d;
+}
+
 void
 ShapeCornersConfig::load()
 {
