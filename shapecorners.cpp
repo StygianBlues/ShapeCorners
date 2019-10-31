@@ -197,7 +197,9 @@ ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintDa
             || !m_managed.contains(w)
             || !w->isPaintingEnabled()
             || KWin::effects->activeFullScreenEffect()
+            || KWin::effects->hasActiveFullScreenEffect()
             || w->isDesktop()
+            || w->isMinimized()
             || data.quads.isTransformed())
     {
         KWin::effects->prePaintWindow(w, data, time);
@@ -232,18 +234,20 @@ static bool hasShadow(KWin::WindowQuadList &qds)
 }
 
 void
-ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
+ShapeCornersEffect::drawWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
 {
     if (!m_shader->isValid()
             || !m_managed.contains(w)
             || !w->isPaintingEnabled()
             || KWin::effects->activeFullScreenEffect()
+            || KWin::effects->hasActiveFullScreenEffect()
             || w->isDesktop()
+            || w->isMinimized()
             || data.quads.isTransformed()
-            || (mask & PAINT_WINDOW_TRANSFORMED)
+            || (mask & (PAINT_WINDOW_TRANSFORMED|PAINT_SCREEN_WITH_TRANSFORMED_WINDOWS))
             || !hasShadow(data.quads))
     {
-        KWin::effects->paintWindow(w, mask, region, data);
+        KWin::effects->drawWindow(w, mask, region, data);
         return;
     }
 
@@ -260,7 +264,7 @@ ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region,
     const KWin::WindowQuadList qds(data.quads);
     //paint the shadow
     data.quads = qds.select(KWin::WindowQuadShadow);
-    KWin::effects->paintWindow(w, mask, region, data);
+    KWin::effects->drawWindow(w, mask, region, data);
 
     //copy the corner regions
     KWin::GLTexture tex[NTex];
@@ -275,7 +279,7 @@ ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region,
 
     //paint the actual window
     data.quads = qds.filterOut(KWin::WindowQuadShadow);
-    KWin::effects->paintWindow(w, mask, region, data);
+    KWin::effects->drawWindow(w, mask, region, data);
 
     //'shape' the corners
     glEnable(GL_BLEND);

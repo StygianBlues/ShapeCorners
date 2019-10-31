@@ -23,7 +23,11 @@ public slots:
     {
         KConfigGroup conf = KSharedConfig::openConfig("shapecorners.conf")->group("General");
         if (conf.readEntry("dsp", false))
+        {
+            conf.writeEntry("roundness", r);
+            conf.sync();
             m_effect->setRoundness(r);
+        }
     }
     Q_NOREPLY void configure() { m_effect->reconfigure(KWin::Effect::ReconfigureAll); }
 };
