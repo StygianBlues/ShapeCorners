@@ -110,8 +110,6 @@ ShapeCornersEffect::windowAdded(KWin::EffectWindow *w)
 {
     if (m_managed.contains(w))
         return;
-    if (!w->hasDecoration())
-        return;
     if (!w->hasDecoration() && (w->windowClass().contains("plasma", Qt::CaseInsensitive)
             || w->windowClass().contains("krunner", Qt::CaseInsensitive)
             || w->windowClass().contains("latte-dock", Qt::CaseInsensitive)))
