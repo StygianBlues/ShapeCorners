@@ -105,9 +105,11 @@ ShapeCornersEffect::windowAdded(KWin::EffectWindow *w)
 {
     if (m_managed.contains(w))
         return;
-    if (w->windowClass().contains("plasma", Qt::CaseInsensitive)
+    if (!w->hasDecoration())
+        return;
+    if (!w->hasDecoration() && (w->windowClass().contains("plasma", Qt::CaseInsensitive)
             || w->windowClass().contains("krunner", Qt::CaseInsensitive)
-            || w->windowClass().contains("latte-dock", Qt::CaseInsensitive))
+            || w->windowClass().contains("latte-dock", Qt::CaseInsensitive)))
         return;
     m_managed << w;
 }
@@ -196,10 +198,8 @@ ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintDa
     if (!m_shader->isValid()
             || !m_managed.contains(w)
             || !w->isPaintingEnabled()
-            || KWin::effects->activeFullScreenEffect()
-            || KWin::effects->hasActiveFullScreenEffect()
+//            || KWin::effects->hasActiveFullScreenEffect()
             || w->isDesktop()
-            || w->isMinimized()
             || data.quads.isTransformed())
     {
         KWin::effects->prePaintWindow(w, data, time);
@@ -234,20 +234,18 @@ static bool hasShadow(KWin::WindowQuadList &qds)
 }
 
 void
-ShapeCornersEffect::drawWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
+ShapeCornersEffect::paintWindow(KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data)
 {
     if (!m_shader->isValid()
             || !m_managed.contains(w)
             || !w->isPaintingEnabled()
-            || KWin::effects->activeFullScreenEffect()
-            || KWin::effects->hasActiveFullScreenEffect()
+//            || KWin::effects->hasActiveFullScreenEffect()
             || w->isDesktop()
-            || w->isMinimized()
             || data.quads.isTransformed()
             || (mask & (PAINT_WINDOW_TRANSFORMED|PAINT_SCREEN_WITH_TRANSFORMED_WINDOWS))
             || !hasShadow(data.quads))
     {
-        KWin::effects->drawWindow(w, mask, region, data);
+        KWin::effects->paintWindow(w, mask, region, data);
         return;
     }
 
@@ -264,7 +262,7 @@ ShapeCornersEffect::drawWindow(KWin::EffectWindow *w, int mask, QRegion region, 
     const KWin::WindowQuadList qds(data.quads);
     //paint the shadow
     data.quads = qds.select(KWin::WindowQuadShadow);
-    KWin::effects->drawWindow(w, mask, region, data);
+    KWin::effects->paintWindow(w, mask, region, data);
 
     //copy the corner regions
     KWin::GLTexture tex[NTex];
@@ -279,7 +277,7 @@ ShapeCornersEffect::drawWindow(KWin::EffectWindow *w, int mask, QRegion region, 
 
     //paint the actual window
     data.quads = qds.filterOut(KWin::WindowQuadShadow);
-    KWin::effects->drawWindow(w, mask, region, data);
+    KWin::effects->paintWindow(w, mask, region, data);
 
     //'shape' the corners
     glEnable(GL_BLEND);
@@ -296,9 +294,7 @@ ShapeCornersEffect::drawWindow(KWin::EffectWindow *w, int mask, QRegion region, 
         m_tex[3-i]->bind();
         glActiveTexture(GL_TEXTURE0);
         tex[i].bind();
-
         tex[i].render(region, rect[i]);
-
         tex[i].unbind();
         m_tex[3-i]->unbind();
     }

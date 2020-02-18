@@ -42,8 +42,8 @@ public:
 
     void reconfigure(ReconfigureFlags flags);
     void prePaintWindow(KWin::EffectWindow* w, KWin::WindowPrePaintData& data, int time);
-    void drawWindow(KWin::EffectWindow* w, int mask, QRegion region, KWin::WindowPaintData& data);
-    virtual int requestedEffectChainPosition() const { return 1; }
+    void paintWindow(KWin::EffectWindow* w, int mask, QRegion region, KWin::WindowPaintData& data);
+    virtual int requestedEffectChainPosition() const { return 99; }
 
 protected Q_SLOTS:
     void windowAdded(KWin::EffectWindow *window);
