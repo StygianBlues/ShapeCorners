@@ -108,8 +108,11 @@ ShapeCornersEffect::~ShapeCornersEffect()
 void
 ShapeCornersEffect::windowAdded(KWin::EffectWindow *w)
 {
-    if (m_managed.contains(w))
+    if (m_managed.contains(w)
+            || w->windowType() == NET::WindowType::OnScreenDisplay
+            || w->windowType() == NET::WindowType::Dock)
         return;
+//    qDebug() << w->windowRole() << w->windowType() << w->windowClass();
     if (!w->hasDecoration() && (w->windowClass().contains("plasma", Qt::CaseInsensitive)
             || w->windowClass().contains("krunner", Qt::CaseInsensitive)
             || w->windowClass().contains("latte-dock", Qt::CaseInsensitive)))
@@ -196,7 +199,7 @@ ShapeCornersEffect::reconfigure(ReconfigureFlags flags)
 }
 
 void
-ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintData &data, int time)
+ShapeCornersEffect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintData &data, std::chrono::milliseconds time)
 {
     if (!m_shader->isValid()
             || !m_managed.contains(w)

@@ -41,7 +41,7 @@ public:
     void fillRegion(const QRegion &reg, const QColor &c);
 
     void reconfigure(ReconfigureFlags flags);
-    void prePaintWindow(KWin::EffectWindow* w, KWin::WindowPrePaintData& data, int time);
+    void prePaintWindow(KWin::EffectWindow* w, KWin::WindowPrePaintData& data, std::chrono::milliseconds time);
     void paintWindow(KWin::EffectWindow* w, int mask, QRegion region, KWin::WindowPaintData& data);
     virtual int requestedEffectChainPosition() const { return 99; }
 
